@@ -275,7 +275,6 @@ impl Automation {
     }
 
     pub(crate) fn sign_document(&mut self, a: &Args) -> Result<Value> {
-        let id = self.open_id(a)?;
         let doc = self.doc(a)?;
         let doc_id = doc.id;
         let field = a.opt_str("field")?.map(str::to_string);
@@ -343,10 +342,18 @@ impl Automation {
             pdfcraft_engine::EditError::Sign(m) if m.starts_with("the signature graphic") => bad(m),
             e => failed(e),
         };
-        let (signed, problems) = if tsa.is_some() || ltv {
-            let fetch = self.signing.fetch.clone().ok_or_else(|| {
-                failed("timestamp_server and ltv need network access, which this session doesn't have (start pdfcraft-cli with --network)")
-            })?;
+        let fetch = match (tsa.is_some() || ltv, self.signing.fetch.clone()) {
+            (false, _) => None,
+            (true, Some(fetch)) => Some(fetch),
+            (true, None) => {
+                return Err(failed(
+                    "timestamp_server and ltv need network access, which this session doesn't have (start pdfcraft-cli with --network)",
+                ));
+            }
+        };
+        // Last, once every other argument is known to be good: a card asks for its PIN here.
+        let id = self.open_id(a)?;
+        let (signed, problems) = if let Some(fetch) = fetch {
             let online = sign::ltv::Online { tsa, ltv, fetch: &*fetch };
             self.session.sign_online(doc_id, &id, opts, &online).map_err(refused)?
         } else {

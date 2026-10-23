@@ -9286,6 +9286,11 @@ fn signing_online_and_with_cards_takes_only_what_the_user_allowed() {
     let r = card.call("sign_document", &json!({ "doc": doc2, "id": "pkcs11:00ff", "out": "card.pdf" }));
     assert!(matches!(&r, Err(ToolError::Failed(m)) if m.contains("no-such-driver")), "{r:?}");
     assert!(matches!(card.call("sign_card_ids", &json!({})), Err(ToolError::Failed(_))));
+    // Arguments that need no card are checked before the card is touched (or its PIN asked).
+    let r = card.call("sign_document", &json!({ "doc": doc2, "id": "pkcs11:00ff", "out": "card.pdf", "ltv": true }));
+    assert!(matches!(&r, Err(ToolError::Failed(m)) if m.contains("--network")), "{r:?}");
+    let r = card.call("sign_document", &json!({ "doc": doc2, "id": "pkcs11:00ff", "out": "card.pdf", "page": 99 }));
+    assert!(matches!(&r, Err(ToolError::InvalidArgs(m)) if m.contains("page 99")), "{r:?}");
 
     // With the network: a signature timestamp from the server (B-T).
     let tsa = pdfcraft_engine::sign::pkcs12::open(&std::fs::read(dir.join("ada.p12")).unwrap(), "secret12").unwrap();

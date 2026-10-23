@@ -152,3 +152,13 @@ pub(crate) fn positional<'a>(args: &'a [String], specs: &[OptionSpec]) -> Vec<&'
     }
     out
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn network_takes_no_value_and_card_module_does() {
+        let args: Vec<String> =
+            ["--network", "sign_document", "doc=1", "--card-module", "/x.so", "ltv=true", "--root", "dir", "out=x"].map(String::from).to_vec();
+        assert_eq!(super::positional(&args, super::RUN_OPTIONS), ["sign_document", "doc=1", "ltv=true", "out=x"]);
+    }
+}

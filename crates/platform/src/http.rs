@@ -13,7 +13,13 @@ const LIMIT: u64 = 8 << 20;
 pub struct Http;
 
 impl Http {
-    fn agent() -> ureq::Agent {
+    /// One agent for every request: the OS trust store is read once, not per request.
+    fn agent() -> &'static ureq::Agent {
+        static AGENT: std::sync::OnceLock<ureq::Agent> = std::sync::OnceLock::new();
+        AGENT.get_or_init(Self::build)
+    }
+
+    fn build() -> ureq::Agent {
         let roots: Vec<ureq::tls::Certificate<'static>> =
             rustls_native_certs::load_native_certs().certs.iter().map(|c| ureq::tls::Certificate::from_der(c.as_ref()).to_owned()).collect();
         ureq::Agent::config_builder()
