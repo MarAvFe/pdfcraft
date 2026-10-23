@@ -289,6 +289,9 @@ const MCP_OPTIONS: &[OptionSpec] = &[
     OptionSpec { name: "--card-module", takes_value: true },
 ];
 
+/// Options that take no value, so the token after them is an argument of its own.
+const VALUELESS: &[&str] = &["--compact", "--edit", "--full", "--network", "--report"];
+
 fn positional(args: &[String]) -> Vec<&str> {
     let mut out = Vec::new();
     let mut skip = false;
@@ -298,7 +301,7 @@ fn positional(args: &[String]) -> Vec<&str> {
             continue;
         }
         if a.starts_with("--") {
-            skip = true;
+            skip = !VALUELESS.contains(&a.as_str());
             continue;
         }
         out.push(a.as_str());
@@ -1169,6 +1172,12 @@ fn current_uid() -> u32 {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn valueless_options_do_not_swallow_the_next_argument() {
+        let args: Vec<String> = ["--network", "sign_document", "doc=1", "--network", "ltv=true", "--root", "dir", "out=x"].map(String::from).to_vec();
+        assert_eq!(super::positional(&args), ["sign_document", "doc=1", "ltv=true", "out=x"]);
+    }
+
     use super::control_file_problem;
 
     #[test]

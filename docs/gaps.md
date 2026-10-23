@@ -208,7 +208,7 @@ update the numbers.
   PKCS #11 cards sign in the dialog, the CLI and the agent tools; signing online makes PAdES B-T to
   B-LTA (opt-in), tested against a fake network.
 - **Evidence:** `sign.pkcs11`, `sign.timestamp-servers`, `sign.pades-bt`, `sign.ltv`, `sign.ocsp-crl`
-  partial; `sign.field-mdp`, `sign.os-trust`, `sign.eutl` planned. Users ask for Acrobat-like validation Users ask for Acrobat-like validation
+  partial; `sign.field-mdp`, `sign.os-trust`, `sign.eutl` planned. Users ask for Acrobat-like validation
   ([#824](https://github.com/storytold/pdfcraft/issues/824),
   [#775](https://github.com/storytold/pdfcraft/issues/775),
   [#718](https://github.com/storytold/pdfcraft/issues/718)).

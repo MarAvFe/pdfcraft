@@ -2069,6 +2069,8 @@ impl PdfCraftApp {
             || self.pending_link.is_some()
             || self.pending_remote_link.is_some()
             || self.updates.open
+            // A signing waiting for the network: the document must not change under it.
+            || self.online_signing.is_some()
     }
 
     /// Enable the UI control channel on `ctx` (opt-in; see [`control`]). Returns a client that
