@@ -57,12 +57,16 @@ for s in signatures(&doc, &bytes, &trust) {                                // li
   `pkcs11::open` logs in with a `Pin` (zeroized on drop, never logged or echoed in errors; `None`
   for PIN-pad readers) and returns a `DigitalId` whose key signs on the token: RSA PKCS #1 v1.5
   (`CKM_RSA_PKCS` over a `DigestInfo` built here, or the token's hashed mechanism) and ECDSA
-  P-256/P-384. The card's issuing CAs come along as the chain. Tested against SoftHSM
-  (`tests/it/pkcs11.rs`); see `docs/smart-card-signing.md`.
+  P-256/P-384. The card's issuing CAs come along as the chain. A token on its final PIN try is
+  refused before logging in. Tested against SoftHSM (`tests/it/pkcs11.rs`); see
+  `docs/smart-card-signing.md`.
+- **Signing online (`ltv`):** `sign_online` goes as far towards B-LTA as the caller allows: a
+  signature timestamp from an RFC 3161 server (`HttpTsa`), the chain's missing issuers (AIA),
+  an OCSP response or else a CRL per certificate (kept only when it verifies and covers the
+  signing time), a `/DSS`, and a closing document timestamp. The transport is the caller's
+  (`ltv::Fetch`), so this crate still never opens a socket.
 
-Not yet: revocation fetching (AIA/CRLDP extraction and a fetcher), timestamp-server
-configuration, FieldMDP locks, certificate security, PKCS #11 in the CLI, agent tools and sign
-dialog.
+Not yet: FieldMDP locks, certificate security.
 macOS Keychain and Windows Current User Personal (My) store identities sign through
 `ExternalKey` without exporting private keys. Windows CNG supports RSA PKCS #1 v1.5 and
 ECDSA P-256/P-384; the store integration is tested with software-backed keys. A smart card
