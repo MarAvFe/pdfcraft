@@ -220,7 +220,8 @@ pub fn mechanism_names(module_path: &Path) -> Result<Vec<String>, SignError> {
 /// `chain`. Every call checks the PIN, even while a key from an earlier call is still logged in.
 ///
 /// `pin` is `None` only for a reader with a PIN pad. A wrong PIN returns an error saying so;
-/// the token counts it, and [`TokenInfo::pin_final_try`] says when one more would lock it.
+/// the token counts it. A token on its final try ([`TokenInfo::pin_final_try`]) is refused
+/// before logging in.
 pub fn open(module_path: &Path, reference_or_name: &str, pin: Option<Pin>) -> Result<DigitalId, SignError> {
     let m = module(module_path)?;
     let wanted =
@@ -233,6 +234,13 @@ pub fn open(module_path: &Path, reference_or_name: &str, pin: Option<Pin>) -> Re
         let Some(found) = certs.iter().filter(|c| wanted(&c.certificate)).max_by_key(|c| c.for_signing).cloned() else { continue };
         if token.pin_locked {
             return Err(SignError::Crypto(format!("{}: the token is locked after too many wrong PINs", token.label)));
+        }
+        // Never spend the last try: a mistyped PIN would lock the card.
+        if token.pin_final_try {
+            return Err(SignError::Crypto(format!(
+                "{}: one more wrong PIN would lock this card, so PdfCraft won't try; check or reset the PIN with the card vendor's tools",
+                token.label
+            )));
         }
         if pin.is_none() && !token.protected_authentication_path {
             return Err(SignError::Crypto(format!("{}: a PIN is needed", token.label)));
