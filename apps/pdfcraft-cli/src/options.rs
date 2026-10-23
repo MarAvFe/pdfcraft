@@ -117,13 +117,19 @@ pub(crate) const RUN_OPTIONS: &[OptionSpec] = &[
     OptionSpec { name: "--script", takes_value: true },
     OptionSpec { name: "--out", takes_value: true },
     OptionSpec { name: "--report", takes_value: false },
+    OptionSpec { name: "--network", takes_value: false },
+    OptionSpec { name: "--card-module", takes_value: true },
 ];
 
 pub(crate) const UI_OPTIONS: &[OptionSpec] = &[OptionSpec { name: "--control", takes_value: true }, OptionSpec { name: "--out", takes_value: true }];
 
 #[cfg(feature = "mcp")]
-pub(crate) const MCP_OPTIONS: &[OptionSpec] =
-    &[OptionSpec { name: "--root", takes_value: true }, OptionSpec { name: "--compact", takes_value: false }];
+pub(crate) const MCP_OPTIONS: &[OptionSpec] = &[
+    OptionSpec { name: "--root", takes_value: true },
+    OptionSpec { name: "--compact", takes_value: false },
+    OptionSpec { name: "--network", takes_value: false },
+    OptionSpec { name: "--card-module", takes_value: true },
+];
 
 /// The arguments that are not options or their values. Which tokens are values is the spec's
 /// answer: skipping the one after every option made `check-one --edit file.pdf` report "missing
