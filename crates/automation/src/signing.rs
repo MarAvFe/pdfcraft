@@ -234,7 +234,9 @@ impl Automation {
                 .find(|c| sign::pkcs11::reference(&c.certificate) == reference)
                 .ok_or_else(|| bad(format!("{reference}: no such certificate on a card in the reader (see sign_card_ids)")))?;
             if card.token.pin_final_try {
-                return Err(failed("the card says one more wrong PIN locks it; sign in the desktop app or with the card vendor's tool"));
+                return Err(failed(
+                    "one more wrong PIN would lock this card, so PdfCraft won't try; check or reset the PIN with the card vendor's tools",
+                ));
             }
             let pin = if card.token.protected_authentication_path {
                 None
